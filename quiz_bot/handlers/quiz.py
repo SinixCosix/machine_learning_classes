@@ -102,3 +102,16 @@ async def next_or_finish(callback: types.CallbackQuery, current_question_index, 
         await get_question(callback.message, callback.from_user.id, state)
     else:
         await finish_quiz(callback, state)
+
+@router.callback_query(F.data == 'show_user_answers')
+async def show_user_answers(callback: types.CallbackQuery, state: FSMContext):
+    qd = await state.get_data()
+    qd = qd['quiz_data']
+    text = 'Ваши ответы:\n\n'
+
+    i = 1
+    for answer in qd:
+        text += f"{i}. Верно: {'Да' if answer['is_correct'] else 'Нет'}. Ваш ответ '{answer['answer']}'"
+        i += 1
+
+    await callback.message.edit_text(text)
