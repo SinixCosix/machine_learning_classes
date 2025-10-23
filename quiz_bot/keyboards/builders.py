@@ -32,7 +32,7 @@ def get_finish_keyboard():
     ))
     builder.add(types.InlineKeyboardButton(
         text="6. Сохранить",
-        callback_data="save_user_answers",
+        callback_data="save_quiz",
     ))
 
     return builder.as_markup(resize_keyboard=True)

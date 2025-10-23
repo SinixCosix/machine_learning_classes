@@ -3,7 +3,7 @@ from aiogram.filters import Command
 from aiogram import F
 from aiogram.fsm.context import FSMContext
 from data.quiz_data import quiz_data
-from database import update_quiz_index, get_quiz_index
+from database import update_quiz_index, get_quiz_index, save_quiz
 from keyboards.builders import generate_options_keyboard
 from quiz_bot.keyboards.builders import get_finish_keyboard
 from states import Quiz
@@ -103,6 +103,7 @@ async def next_or_finish(callback: types.CallbackQuery, current_question_index, 
     else:
         await finish_quiz(callback, state)
 
+
 @router.callback_query(F.data == 'show_user_answers')
 async def show_user_answers(callback: types.CallbackQuery, state: FSMContext):
     qd = await state.get_data()
@@ -114,4 +115,17 @@ async def show_user_answers(callback: types.CallbackQuery, state: FSMContext):
         text += f"{i}. Верно: {'Да' if answer['is_correct'] else 'Нет'}. Ваш ответ '{answer['answer']}'"
         i += 1
 
-    await callback.message.edit_text(text)
+    await callback.message.edit_text(text, reply_markup=get_finish_keyboard())
+
+
+@router.callback_query(F.data == 'save_quiz')
+async def handle_save_quiz(callback: types.CallbackQuery, state: FSMContext):
+    qd = await state.get_data()
+    qd = qd['quiz_data']
+    await save_quiz(callback.from_user.id, qd)
+    await callback.answer('Сохранено', reply_markup=get_finish_keyboard())
+
+
+@router.callback_query(F.data == 'show_statistics')
+async def handle_show_statistics(callback: types.CallbackQuery, state: FSMContext):
+    pass
