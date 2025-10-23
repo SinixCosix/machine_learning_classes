@@ -1,13 +1,12 @@
 import asyncio
 import logging
-from aiogram import Bot, Dispatcher, types
-from aiogram.filters.command import Command
-from aiogram import F
+
+from aiogram import Bot, Dispatcher
 
 from config import API_TOKEN
 from database import create_table
-from handlers.start import cmd_start
-from handlers.quiz import *
+from handlers.quiz import router as quiz_router
+from handlers.start import router as start_router
 
 # Включаем логирование
 logging.basicConfig(level=logging.INFO)
@@ -16,14 +15,8 @@ logging.basicConfig(level=logging.INFO)
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
 
-# Регистрируем хэндлеры
-dp.message.register(cmd_start, Command("start"))
-dp.message.register(cmd_start, F.text == "Начать игру")
-dp.message.register(cmd_quiz, Command("quiz"))
-dp.message.register(new_quiz, F.text == "Начать игру")
-dp.callback_query.register(right_answer, F.data == "right_answer")
-dp.callback_query.register(wrong_answer, F.data == "wrong_answer")
-dp.callback_query.register(finish_quiz, F.data == "finish_quiz")
+dp.include_router(quiz_router)
+dp.include_router(start_router)
 
 
 async def main():

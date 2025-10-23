@@ -8,7 +8,7 @@ def generate_options_keyboard(answer_options, right_answer):
     for option in answer_options:
         builder.add(types.InlineKeyboardButton(
             text=option,
-            callback_data="right_answer" if option == right_answer else "wrong_answer")
+            callback_data=f"right_answer.{option}" if option == right_answer else f"wrong_answer.{option}")
         )
 
     builder.adjust(1)
