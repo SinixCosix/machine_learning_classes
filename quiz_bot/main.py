@@ -7,7 +7,7 @@ from aiogram import F
 from config import API_TOKEN
 from database import create_table
 from handlers.start import cmd_start
-from handlers.quiz import cmd_quiz, right_answer, wrong_answer, new_quiz
+from handlers.quiz import *
 
 # Включаем логирование
 logging.basicConfig(level=logging.INFO)
@@ -23,6 +23,7 @@ dp.message.register(cmd_quiz, Command("quiz"))
 dp.message.register(new_quiz, F.text == "Начать игру")
 dp.callback_query.register(right_answer, F.data == "right_answer")
 dp.callback_query.register(wrong_answer, F.data == "wrong_answer")
+dp.callback_query.register(finish_quiz, F.data == "finish_quiz")
 
 
 async def main():

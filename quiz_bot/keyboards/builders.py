@@ -19,3 +19,20 @@ def get_start_keyboard():
     builder = ReplyKeyboardBuilder()
     builder.add(types.KeyboardButton(text="Начать игру"))
     return builder.as_markup(resize_keyboard=True)
+
+def get_finish_keyboard():
+    builder = InlineKeyboardBuilder()
+    builder.add(types.InlineKeyboardButton(
+        text='5. Вывести ответы',
+        callback_data="show_user_answers",
+    ))
+    builder.add(types.InlineKeyboardButton(
+        text='6. Статистика',
+        callback_data="show_statistics",
+    ))
+    builder.add(types.InlineKeyboardButton(
+        text="6. Сохранить",
+        callback_data="save_user_answers",
+    ))
+
+    return builder.as_markup(resize_keyboard=True)
