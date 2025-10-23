@@ -5,7 +5,9 @@ from aiogram.fsm.context import FSMContext
 from data.quiz_data import quiz_data
 from database import update_quiz_index, get_quiz_index, save_quiz
 from keyboards.builders import generate_options_keyboard
-from quiz_bot.keyboards.builders import get_finish_keyboard
+
+from quiz_bot.database import get_quiz_statistics
+from quiz_bot.keyboards.builders import get_finish_keyboard, get_start_keyboard
 from states import Quiz
 
 router = Router()
@@ -14,7 +16,7 @@ router = Router()
 @router.message(Command("start"))
 @router.message(F.text == "Начать игру")
 async def cmd_start(message: types.Message, state: FSMContext):
-    await message.answer("Давайте начнем квиз!")
+    await message.answer("Добро пожаловать в квиз!", reply_markup=get_start_keyboard())
     await new_quiz(message, state)
 
 
@@ -126,6 +128,36 @@ async def handle_save_quiz(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer('Сохранено', reply_markup=get_finish_keyboard())
 
 
-@router.callback_query(F.data == 'show_statistics')
-async def handle_show_statistics(callback: types.CallbackQuery, state: FSMContext):
-    pass
+@router.message(F.text == '6. Статистика')
+async def handle_show_statistics(message: types.Message):
+    try:
+        stats = await get_quiz_statistics()
+
+        message_text = "📊 <b>Статистика квиза</b>\n\n"
+
+        message_text += f"👥 <b>Всего игроков:</b> {stats['total_players']}\n"
+        message_text += f"📝 <b>Всего ответов:</b> {stats['total_answers']}\n"
+        message_text += f"✅ <b>Правильных ответов:</b> {stats['correct_answers']}\n"
+        message_text += f"📈 <b>Процент правильных:</b> {stats['correct_percentage']}%\n\n"
+
+        if stats.get('hardest_question'):
+            message_text += f"🔥 <b>Самый сложный вопрос:</b> №{stats['hardest_question']['index']}\n"
+            message_text += f"   (успешно: {stats['hardest_question']['success_rate']}%)\n"
+
+        if stats.get('easiest_question'):
+            message_text += f"🎯 <b>Самый легкий вопрос:</b> №{stats['easiest_question']['index']}\n"
+            message_text += f"   (успешно: {stats['easiest_question']['success_rate']}%)\n\n"
+
+        if stats['top_players']:
+            message_text += "🏆 <b>Топ-5 игроков:</b>\n"
+            for i, (user_id, correct_answers) in enumerate(stats['top_players'], 1):
+                message_text += f"{i}. ID {user_id}: {correct_answers} правильных ответов\n"
+        else:
+            message_text += "🏆 <b>Топ игроков:</b> пока нет данных\n"
+
+        await message.answer(message_text, parse_mode='HTML')
+
+    except Exception as e:
+        error_message = "❌ Произошла ошибка при получении статистики. Попробуйте позже."
+        await message.answer(error_message)
+        print(f"Error in statistics: {e}")
